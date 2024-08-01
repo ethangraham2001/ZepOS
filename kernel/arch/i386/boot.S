@@ -34,6 +34,7 @@ boot_page_table1:
 .global _start
 .type _start, @function
 _start:
+
 	# Physical address of boot_page_table1.
 	# TODO: I recall seeing some assembly that used a macro to do the
 	#       conversions to and from physical. Maybe this should be done in this
@@ -111,8 +112,14 @@ _start:
 	# Set up the stack.
 	mov $stack_top, %esp
 
+    # These two registers contain multiboot magic and multiboot info pointers
+    # respectively. We must push them to stack at boot so that they can be used
+    # by kmain
+    push %eax
+    push %ebx
+
 	# Enter the high-level kernel.
-	call kernel_main
+	call kmain 
 
 	# Infinite loop if the system has nothing more to do.
 	cli
