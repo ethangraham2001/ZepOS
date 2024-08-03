@@ -35,32 +35,20 @@ boot_page_table1:
 .type _start, @function
 _start:
 	# Physical address of boot_page_table1.
-	# TODO: I recall seeing some assembly that used a macro to do the
-	#       conversions to and from physical. Maybe this should be done in this
-	#       code as well?
 	movl $(boot_page_table1 - 0xC0000000), %edi
-	# First address to map is address 0.
-	# TODO: Start at the first kernel page instead. Alternatively map the first
-	#       1 MiB as it can be generally useful, and there's no need to
-	#       specially map the VGA buffer.
+
 	movl $0, %esi
+
 	# Map 1023 pages. The 1024th will be the VGA text buffer.
 	movl $1023, %ecx
 
 1:
-	# Only map the kernel.
-	cmpl $_kernel_start, %esi
-	jl 2f
-	cmpl $(_kernel_end - 0xC0000000), %esi
-	jge 3f
-
 	# Map physical address as "present, writable". Note that this maps
 	# .text and .rodata as writable. Mind security and map them as non-writable.
 	movl %esi, %edx
 	orl $0x003, %edx
 	movl %edx, (%edi)
 
-2:
 	# Size of page is 4096 bytes.
 	addl $4096, %esi
 	# Size of entries in boot_page_table1 is 4 bytes.
@@ -68,7 +56,6 @@ _start:
 	# Loop to the next entry if we haven't finished.
 	loop 1b
 
-3:
 	# Map VGA video memory to 0xC03FF000 as "present, writable".
 	movl $(0x000B8000 | 0x003), boot_page_table1 - 0xC0000000 + 1023 * 4
 
@@ -93,14 +80,13 @@ _start:
 	movl %ecx, %cr0
 
 	# Jump to higher half with an absolute jump. 
-	lea 4f, %ecx
+	lea higher_half, %ecx
 	jmp *%ecx
 
 .section .text
 
-4:
+higher_half:
 	# At this point, paging is fully set up and enabled.
-
 	# Unmap the identity mapping as it is now unnecessary. 
 	movl $0, boot_page_directory + 0
 
@@ -111,10 +97,17 @@ _start:
 	# Set up the stack.
 	mov $stack_top, %esp
 
+    # These two registers contain multiboot magic and multiboot info pointers
+    # respectively. We must push them to stack at boot so that they can be used
+    # by kmain
+    push %eax
+    push %ebx
+
 	# Enter the high-level kernel.
-	call kernel_main
+	call kmain 
 
 	# Infinite loop if the system has nothing more to do.
 	cli
-1:	hlt
-	jmp 1b
+idle_loop:
+    hlt
+	jmp idle_loop
