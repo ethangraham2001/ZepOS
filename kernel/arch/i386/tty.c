@@ -49,6 +49,11 @@ void terminal_putchar(char c) {
         if (++terminal_row == VGA_HEIGHT)
             terminal_row = 0;
         terminal_column = 0;
+    } else if (c == '\t') {
+        terminal_column += 4;
+        // TODO: should define a MIN macro somewhere global, but don't know 
+        // where to put that yet. Maybe stdlib?
+        terminal_column = terminal_column > VGA_WIDTH ? VGA_WIDTH : terminal_column;
     }
 
 	terminal_putentryat(uc, terminal_color, terminal_column, terminal_row);
