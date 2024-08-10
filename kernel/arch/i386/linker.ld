@@ -41,5 +41,10 @@ SECTIONS
 	}
 	/* Add a symbol that indicates the end address of the kernel. */
 	_kernel_end = .;
-}
 
+	. = ALIGN(4096);
+	_pmm_start = .;
+	/* sections decorated with __attribute__((".pmm_data")) will go here */
+	.pmm_data : { *(.pmm_data) }
+	_pmm_end = .;
+}
