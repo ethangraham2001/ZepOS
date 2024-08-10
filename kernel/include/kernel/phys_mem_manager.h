@@ -16,13 +16,13 @@
  * bootloader before paging is enabled, such as `multiboot_info_t` and its
  * related structs
  */
-#define KERN_VIRTUAL_ADDRESS(a) ((void*)((uint32_t) a + KERNEL_VIRTUAL_BASE))
+#define KERN_VIRTUAL_ADDRESS(a) ((void *)((uint32_t)a + KERNEL_VIRTUAL_BASE))
 
 /**
  * Conversely, we want to convert kernel address `a` from a virtual address to
  * a physical one, namely for the physical memory manager
  */
-#define KERN_PHYSICAL_ADDRESS(a) ((void*)((uint32_t) a - KERNEL_VIRTUAL_BASE))
+#define KERN_PHYSICAL_ADDRESS(a) ((void *)((uint32_t)a - KERNEL_VIRTUAL_BASE))
 
 // this sits in the kernel
 #define PMM_PHYS_ADDRESS 0x110000
