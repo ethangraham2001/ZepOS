@@ -37,6 +37,11 @@
  */
 typedef struct pmm_data {
 	uint32_t num_free_frames;
+	/**
+	 * Bitmap of frames for the whole 4GiB address space of physical addresses.
+	 * A `0` indicates a free and usable page, and a `1` indicates a page that
+	 * is either occupied or unusable.
+	 */
 	uint8_t frame_bitmap[MAX_PAGES / 8];
 } pmm_data_t;
 
@@ -55,3 +60,13 @@ int pmm_init(multiboot_info_t *mbi);
  * returns the number of free frames in the physical memory manager
  */
 uint32_t pmm_get_num_free_frames();
+
+/**
+ * allocates a physical frame and returns its frame number, or -1 on failure
+ */
+phys_frame_num_t pmm_alloc_frame();
+
+/**
+ * frees a physical frame
+ */
+void pmm_free_frame(phys_frame_num_t frame_num);

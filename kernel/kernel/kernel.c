@@ -28,5 +28,4 @@ void kmain(multiboot_info_t *mbi, unsigned int magic)
 	}
 
 	pmm_init(mbi);
-	printf("pmm found %d usable frames\n", pmm_get_num_free_frames());
 }
