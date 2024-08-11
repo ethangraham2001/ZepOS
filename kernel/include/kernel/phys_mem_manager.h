@@ -70,3 +70,15 @@ phys_frame_num_t pmm_alloc_frame();
  * frees a physical frame
  */
 void pmm_free_frame(phys_frame_num_t frame_num);
+
+/**
+ * converts a physical frame number to an address
+ */
+uintptr_t frame_num_to_addr(phys_frame_num_t frame_num);
+
+/**
+ * converts a physical address to a frame num. `addr` should be 4KiB aligned,
+ * but will not fail if this is not the case - the function will just return 
+ * the start 4KiB-aligned address of the physical frame that the `addr` lies in
+ */
+phys_frame_num_t addr_to_frame_num(uintptr_t addr);

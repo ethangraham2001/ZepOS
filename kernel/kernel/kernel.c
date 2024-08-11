@@ -28,4 +28,7 @@ void kmain(multiboot_info_t *mbi, unsigned int magic)
 	}
 
 	pmm_init(mbi);
+
+	phys_frame_num_t frame_num = pmm_alloc_frame();
+	printf("allocated page starting at %x\n", frame_num_to_addr(frame_num));
 }

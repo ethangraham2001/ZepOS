@@ -43,8 +43,7 @@ int pmm_init(multiboot_info_t *mbi)
 		while (curr_addr < region_end) {
 			if (curr_addr >= _alloc_start) {
 				uint32_t page_num = curr_addr / PAGE_SIZE;
-				_pmm_mark_frame_as_free(page_num);
-				pmm.num_free_frames++;
+				pmm_free_frame(page_num);
 			}
 
 			curr_addr += PAGE_SIZE;
@@ -84,6 +83,14 @@ phys_frame_num_t pmm_alloc_frame() {
 void pmm_free_frame(phys_frame_num_t frame_num) {
 	_pmm_mark_frame_as_free(frame_num);
 	pmm.num_free_frames++;
+}
+
+uintptr_t frame_num_to_addr(phys_frame_num_t frame_num) {
+	return frame_num * PAGE_SIZE;
+}
+
+phys_frame_num_t addr_to_frame_num(uintptr_t addr) {
+	return addr / PAGE_SIZE;
 }
 
 static inline void _pmm_mark_frame_as_free(uint32_t frame_num)
