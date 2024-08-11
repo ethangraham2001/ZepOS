@@ -21,12 +21,12 @@ static inline void _pmm_mark_frame_as_alloc(uint32_t frame_num);
 
 int pmm_init(multiboot_info_t *mbi)
 {
-	memset(pmm.frame_bitmap, 0xFF, sizeof(uint8_t)*(MAX_PAGES/8));
+	memset(pmm.frame_bitmap, 0xFF, sizeof(uint8_t) * (MAX_PAGES / 8));
 	uint32_t i;
 	for (i = 0; i < mbi->mmap_length; i += sizeof(multiboot_memory_map_t)) {
 		multiboot_memory_map_t *mmmt =
 			(multiboot_memory_map_t *)(mbi->mmap_addr + i);
-		mmmt = KERN_VIRTUAL_ADDRESS(mmmt); 
+		mmmt = KERN_VIRTUAL_ADDRESS(mmmt);
 
 		if (mmmt->type != MULTIBOOT_MEMORY_AVAILABLE)
 			continue;
@@ -58,20 +58,21 @@ uint32_t pmm_get_num_free_frames()
 	return pmm.num_free_frames;
 }
 
-phys_frame_num_t pmm_alloc_frame() {
+phys_frame_num_t pmm_alloc_frame()
+{
 	// scan the bitmap for a free frame
-	for (uint32_t i = 0; i < MAX_PAGES/8; i++) {
+	for (uint32_t i = 0; i < MAX_PAGES / 8; i++) {
 		if (pmm.frame_bitmap[i] == 0xFF)
 			continue;
 
 		uint8_t entry = pmm.frame_bitmap[i];
 		uint32_t j = 0;
 		while (entry & 0x1) {
-			entry >>=1;
+			entry >>= 1;
 			j++;
 		}
 
-		phys_frame_num_t frame_num = i*8 + j;
+		phys_frame_num_t frame_num = i * 8 + j;
 		_pmm_mark_frame_as_alloc(frame_num);
 		pmm.num_free_frames--;
 		return frame_num;
@@ -80,16 +81,19 @@ phys_frame_num_t pmm_alloc_frame() {
 	return -1;
 }
 
-void pmm_free_frame(phys_frame_num_t frame_num) {
+void pmm_free_frame(phys_frame_num_t frame_num)
+{
 	_pmm_mark_frame_as_free(frame_num);
 	pmm.num_free_frames++;
 }
 
-uintptr_t frame_num_to_addr(phys_frame_num_t frame_num) {
+uintptr_t frame_num_to_addr(phys_frame_num_t frame_num)
+{
 	return frame_num * PAGE_SIZE;
 }
 
-phys_frame_num_t addr_to_frame_num(uintptr_t addr) {
+phys_frame_num_t addr_to_frame_num(uintptr_t addr)
+{
 	return addr / PAGE_SIZE;
 }
 
