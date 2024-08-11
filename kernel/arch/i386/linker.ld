@@ -2,7 +2,7 @@ ENTRY (_start)
 
 SECTIONS
 {
-        . = 0x00100000;
+	. = 0x00100000;
 	/* The kernel will live at 3GB + 1MB in the virtual address space, */
 	/* which will be mapped to 1MB in the physical address space. */
 	/* Note that we page-align the sections. Hence 4K! */
@@ -41,5 +41,10 @@ SECTIONS
 	}
 	/* Add a symbol that indicates the end address of the kernel. */
 	_kernel_end = .;
-}
 
+	. = ALIGN(4096);
+	_pmm_start = .;
+	/* sections decorated with __attribute__((".pmm_data")) will go here */
+	.pmm_data : { *(.pmm_data) }
+	_pmm_end = .;
+}

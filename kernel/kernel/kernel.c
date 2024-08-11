@@ -1,44 +1,34 @@
 #include <stdio.h>
+#include <stdint.h>
 
 #include <kernel/tty.h>
 #include <kernel/multiboot.h>
+#include <kernel/phys_mem_manager.h>
 #include <stdlib.h>
 
-#define KERNEL_VIRTUAL_BASE 0xC0000000
-
-/**
- * Converts a physical address `a` into a virtual address. This is useful for
- *
- */
-#define VIRTUAL_ADDRESS(a) ((void*)((unsigned int) a + KERNEL_VIRTUAL_BASE))
+extern char _kernel_start;
+extern char _kernel_end;
 
 // this is the main entry-point for the kernel woohoo!
-void kmain(multiboot_info_t* mbi, unsigned int magic) {
+void kmain(multiboot_info_t *mbi, unsigned int magic)
+{
 	terminal_initialize();
 
-    // account for higher-half kernel mapping in virtual memory
-    mbi = (multiboot_info_t*)((unsigned int)mbi + KERNEL_VIRTUAL_BASE);
+	printf("kernel start: %x\n", &_kernel_start);
+	printf("kernel end:   %x\n", KERN_PHYSICAL_ADDRESS(&_kernel_end));
 
-    if (magic != MULTIBOOT_BOOTLOADER_MAGIC) {
-        abort();
-    }
-    if (!(mbi->flags >> 6 & 0x1)) {
-        abort();
-    }
+	// account for higher-half kernel mapping in virtual memory
+	mbi = (multiboot_info_t *)((uint32_t)mbi + KERNEL_VIRTUAL_BASE);
 
-    printf("mem_lower %x, mem_upper %x\n\n", mbi->mem_lower, mbi->mem_upper);
+	if (magic != MULTIBOOT_BOOTLOADER_MAGIC) {
+		abort();
+	}
+	if (!(mbi->flags >> 6 & 0x1)) {
+		abort();
+	}
 
-    unsigned int i;
-    for (i = 0; i < mbi->mmap_length; i += sizeof(multiboot_memory_map_t)) {
-        multiboot_memory_map_t *mmmt = 
-            (multiboot_memory_map_t*) (mbi->mmap_addr + i);
-        mmmt = VIRTUAL_ADDRESS(mmmt);
+	pmm_init(mbi);
 
-        printf("addr_lo %x, addr_hi %x\nlength_lo %x, length_hi %x\n",
-            mmmt->addr_lo, mmmt->addr_hi, mmmt->len_lo, mmmt->len_hi);
-
-        if (mmmt->type != MULTIBOOT_MEMORY_AVAILABLE) {
-            printf("\tthis block is available\n");
-        }
-    }
+	phys_frame_num_t frame_num = pmm_alloc_frame();
+	printf("allocated page starting at %x\n", frame_num_to_addr(frame_num));
 }
