@@ -99,9 +99,16 @@ higher_half:
 
     # These two registers contain multiboot magic and multiboot info pointers
     # respectively. We must push them to stack at boot so that they can be used
-    # by kmain
+    # by kmain. We need to be careful not to modify these before pushing them 
+	# to the stack.
     push %eax
     push %ebx
+
+	# enable A20 line
+	call enable_a20_fast
+
+	# initialize and enter protected mode
+	call pmode_init
 
 	# Enter the high-level kernel.
 	call kmain 
@@ -111,3 +118,36 @@ higher_half:
 idle_loop:
     hlt
 	jmp idle_loop
+
+enable_a20_fast:
+	inb $0x92, %al
+	orb $2, %al
+	outb %al, $0x92
+	ret
+
+# pmode_init enables protected mode
+pmode_init:
+	# disable interrupts
+	cli
+	# initialize Global Descriptor Table (GDT)
+	call gdt_init
+	# enable PE (protection enabled bit) in control register 0
+	movl %cr0, %eax
+	orl $1, %eax
+	movl %eax, %cr0
+	# Reload CS register containing code selector. 0x08 is the kernel code 
+	# segment in the GDT (index 1)
+	ljmp $0x08, $.reload_CS
+	# jmp .reload_CS
+
+.reload_CS:
+	# reload segment registers. 0x10 corresponds to the kernel data segment
+	movw $0x10, %ax
+	movw %ax, %ds
+	movw %ax, %es
+	movw %ax, %fs
+	movw %ax, %gs
+	movw %ax, %ss
+	# re-enable interrupts and return
+	sti
+	ret
