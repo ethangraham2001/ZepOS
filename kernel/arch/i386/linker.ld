@@ -40,6 +40,13 @@ SECTIONS
 		*(.gdt)
 		_gdt_end = .;
 	}
+	/* IDT (Interrupt Descriptor Table) section */
+	.idt ALIGN (4K) : AT (ADDR (.idt) - 0xC0000000)
+	{
+		_idt_start = .;
+		*(.idt)
+		_idt_end = .;
+	}
 	.bss ALIGN (4K) : AT (ADDR (.bss) - 0xC0000000)
 	{
 		*(COMMON)

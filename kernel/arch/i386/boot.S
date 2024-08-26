@@ -131,6 +131,8 @@ pmode_init:
 	cli
 	# initialize Global Descriptor Table (GDT)
 	call gdt_init
+	# initialize Interrupt Descriptor Table (IDT)
+	call idt_init
 	# enable PE (protection enabled bit) in control register 0
 	movl %cr0, %eax
 	orl $1, %eax
