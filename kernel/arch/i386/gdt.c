@@ -64,7 +64,7 @@ void gdt_init()
 	set_gdt_entry(5, task_state_seg);
 
 	struct gdtr gdtr = {
-		.limit = sizeof(uint64_t) * 6, // each GDT entry is 8-bytes
+		.limit = sizeof(uint64_t) * 6 - 1, // each GDT entry is 8-bytes
 		.base = (uint32_t)&gdt,
 	};
 
